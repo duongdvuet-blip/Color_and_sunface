@@ -19,7 +19,9 @@ def get_all_components(root_component):
     return components
 
 
-def face_area(face, uf_session):
+def face_area(face, uf_session=None):
+    if uf_session is None:
+        uf_session = NXOpen.UF.UFSession.GetUFSession()
     try:
         return uf_session.Modl.AskFaceArea(face.Tag)
     except Exception:
@@ -30,58 +32,20 @@ def face_area(face, uf_session):
         return 0.0
 
 
-def body_surface_area(body, uf_session):
+def body_surface_area(body, uf_session=None):
+    if uf_session is None:
+        uf_session = NXOpen.UF.UFSession.GetUFSession()
     faces = body.GetFaces()
     return sum(face_area(face, uf_session) for face in faces)
 
 
-def total_body_area(part, uf_session):
+def total_body_area(part, uf_session=None):
+    if uf_session is None:
+        uf_session = NXOpen.UF.UFSession.GetUFSession()
     bodies = [b for b in part.Bodies]
     if not bodies:
         return None, []
     area = sum(body_surface_area(body, uf_session) for body in bodies)
-    return area, bodies
-
-
-def find_existing_color(area, area_color_pairs):
-    for existing_area, color in area_color_pairs:
-        if abs(existing_area - area) <= AREA_TOLERANCE:
-            return color
-    return None
-
-AREA_TOLERANCE = 0.01
-
-
-def get_all_components(root_component):
-    components = []
-    stack = [root_component]
-    while stack:
-        comp = stack.pop()
-        components.append(comp)
-        children = comp.GetChildren()
-        for child in children:
-            stack.append(child)
-    return components
-
-
-def face_area(face):
-    if hasattr(face, "Area"):
-        return face.Area
-    if hasattr(face, "GetArea"):
-        return face.GetArea()
-    return 0.0
-
-
-def body_surface_area(body):
-    faces = body.GetFaces()
-    return sum(face_area(face) for face in faces)
-
-
-def total_body_area(part):
-    bodies = [b for b in part.Bodies]
-    if not bodies:
-        return None, []
-    area = sum(body_surface_area(body) for body in bodies)
     return area, bodies
 
 
