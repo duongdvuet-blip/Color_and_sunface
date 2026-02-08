@@ -18,11 +18,24 @@ def get_all_components(root_component):
     return components
 
 
+def face_area(face):
+    if hasattr(face, "Area"):
+        return face.Area
+    if hasattr(face, "GetArea"):
+        return face.GetArea()
+    return 0.0
+
+
+def body_surface_area(body):
+    faces = body.GetFaces()
+    return sum(face_area(face) for face in faces)
+
+
 def total_body_area(part):
     bodies = [b for b in part.Bodies]
     if not bodies:
         return None, []
-    area = sum(body.GetArea() for body in bodies)
+    area = sum(body_surface_area(body) for body in bodies)
     return area, bodies
 
 
